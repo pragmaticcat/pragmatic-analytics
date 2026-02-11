@@ -25,19 +25,64 @@ class PragmaticAnalytics extends Plugin
                 $event->rules['pragmatic-analytics/options'] = 'pragmatic-analytics/default/options';
             }
         );
+
+        // Register nav item under shared "Pragmatic" group
+        Event::on(
+            Cp::class,
+            Cp::EVENT_REGISTER_CP_NAV_ITEMS,
+            function(RegisterCpNavItemsEvent $event) {
+                $groupKey = null;
+                foreach ($event->navItems as $key => $item) {
+                    if (($item['label'] ?? '') === 'Pragmatic' && isset($item['subnav'])) {
+                        $groupKey = $key;
+                        break;
+                    }
+                }
+
+                if ($groupKey === null) {
+                    $newItem = [
+                        'label' => 'Pragmatic',
+                        'url' => 'pragmatic-analytics/general',
+                        'icon' => __DIR__ . '/icons/icon.svg',
+                        'subnav' => [],
+                    ];
+
+                    // Insert after the first matching nav item
+                    $afterKey = null;
+                    $insertAfter = ['users', 'assets', 'categories', 'entries'];
+                    foreach ($insertAfter as $target) {
+                        foreach ($event->navItems as $key => $item) {
+                            if (($item['url'] ?? '') === $target) {
+                                $afterKey = $key;
+                                break 2;
+                            }
+                        }
+                    }
+
+                    if ($afterKey !== null) {
+                        $pos = array_search($afterKey, array_keys($event->navItems)) + 1;
+                        $event->navItems = array_merge(
+                            array_slice($event->navItems, 0, $pos, true),
+                            ['pragmatic' => $newItem],
+                            array_slice($event->navItems, $pos, null, true),
+                        );
+                        $groupKey = 'pragmatic';
+                    } else {
+                        $event->navItems['pragmatic'] = $newItem;
+                        $groupKey = 'pragmatic';
+                    }
+                }
+
+                $event->navItems[$groupKey]['subnav']['analytics'] = [
+                    'label' => 'Analytics',
+                    'url' => 'pragmatic-analytics/general',
+                ];
+            }
+        );
     }
 
     public function getCpNavItem(): array
     {
-        $item = parent::getCpNavItem();
-        $item['label'] = 'Pragmatic';
-        $item['subnav'] = [
-            'analytics' => [
-                'label' => 'Analytics',
-                'url' => 'pragmatic-analytics/general',
-            ],
-        ];
-
-        return $item;
+        return null;
     }
 }
