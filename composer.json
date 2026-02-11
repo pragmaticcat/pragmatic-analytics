@@ -2,7 +2,7 @@
   "name": "pragmatic/pragmatic-analytics",
   "description": "Pragmatic Analytics plugin for Craft CMS",
   "type": "craft-plugin",
-  "license": "proprietary",
+  "license": "MIT",
   "require": {
     "php": ">=8.2",
     "craftcms/cms": "^5.0"
@@ -22,9 +22,9 @@
     "email": "oriolnoya@pragmatic.cat"
   },
   "extra": {
-    "name": "Pragmatic Analytics",
     "handle": "pragmatic-analytics",
     "class": "pragmatic\\analytics\\PragmaticAnalytics",
+    "name": "Pragmatic Analytics",
     "developer": "Pragmatic",
     "developerUrl": "https://www.pragmatic.cat",
     "documentationUrl": "https://github.com/pragmaticcat/pragmatic-analytics/blob/main/README.md",
