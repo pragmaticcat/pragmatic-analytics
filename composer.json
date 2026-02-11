@@ -1,0 +1,34 @@
+{
+  "name": "pragmatic/pragmatic-analytics",
+  "description": "Pragmatic Analytics plugin for Craft CMS",
+  "type": "craft-plugin",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.2",
+    "craftcms/cms": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "pragmatic\\analytics\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Oriol Noya",
+      "email": "oriolnoya@pragmatic.cat"
+    }
+  ],
+  "support": {
+    "email": "oriolnoya@pragmatic.cat"
+  },
+  "extra": {
+    "name": "Pragmatic Analytics",
+    "handle": "pragmatic-analytics",
+    "class": "pragmatic\\analytics\\PragmaticAnalytics",
+    "developer": "Pragmatic",
+    "developerUrl": "https://www.pragmatic.cat",
+    "documentationUrl": "https://github.com/pragmaticcat/pragmatic-analytics/blob/main/README.md",
+    "hasSettings": false,
+    "hasCpSection": true
+  }
+}
