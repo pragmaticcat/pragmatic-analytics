@@ -110,6 +110,11 @@ class PragmaticAnalytics extends Plugin
                     'label' => 'Analytics',
                     'url' => 'pragmatic-analytics/general',
                 ];
+
+                $path = Craft::$app->getRequest()->getPathInfo();
+                if ($path === 'pragmatic-analytics' || str_starts_with($path, 'pragmatic-analytics/')) {
+                    $event->navItems[$groupKey]['url'] = 'pragmatic-analytics';
+                }
             }
         );
 
