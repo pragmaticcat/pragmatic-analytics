@@ -4,4 +4,66 @@
 {% set selectedTab = 'general' %}
 
 {% block content %}
+  <div class="readable">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="pane">
+        <h3 style="margin-top:0;">Visitas (30 días)</h3>
+        <p style="font-size:28px;margin:0;">{{ overview.visits ?? 0 }}</p>
+      </div>
+      <div class="pane">
+        <h3 style="margin-top:0;">Usuarios únicos (30 días)</h3>
+        <p style="font-size:28px;margin:0;">{{ overview.uniqueVisitors ?? 0 }}</p>
+      </div>
+    </div>
+
+    <div class="pane" style="margin-bottom:20px;">
+      <h2 style="margin-top:0;">Evolución diaria (30 días)</h2>
+      {% if dailyStats is not empty %}
+        <table class="data fullwidth">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Visitas</th>
+              <th>Usuarios únicos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in dailyStats %}
+              <tr>
+                <td>{{ row.date|date('Y-m-d') }}</td>
+                <td>{{ row.visits }}</td>
+                <td>{{ row.uniqueVisitors }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No hay datos todavía.</p>
+      {% endif %}
+    </div>
+
+    <div class="pane">
+      <h2 style="margin-top:0;">Páginas más vistas (30 días)</h2>
+      {% if topPages is not empty %}
+        <table class="data fullwidth">
+          <thead>
+            <tr>
+              <th>Ruta</th>
+              <th>Visitas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for page in topPages %}
+              <tr>
+                <td><code>{{ page.path }}</code></td>
+                <td>{{ page.visits }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No hay datos de páginas todavía.</p>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

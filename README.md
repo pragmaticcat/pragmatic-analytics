@@ -7,6 +7,9 @@ Craft CMS 5 plugin scaffold for a Pragmatic Analytics control panel section, wit
 - Analytics section entry point redirects to `General`
 - Two CP tabs: `General` (`/pragmatic-analytics/general`) and `Opciones` (`/pragmatic-analytics/options`)
 - Base Twig layout for Analytics pages: `pragmatic-analytics/_layout`
+- Built-in tracking for total visits, unique users, and top pages (aggregated data only)
+- Exclusions for logged-in users, bot user agents, and configured environments
+- Optional GA4 script injection via `Measurement ID`
 - Plugin registered as `pragmatic-analytics` for Craft CMS 5 projects
 
 ## Requirements
@@ -21,8 +24,8 @@ Craft CMS 5 plugin scaffold for a Pragmatic Analytics control panel section, wit
 ## Usage
 ### CP
 - Go to `Pragmatic > Analytics`.
-- Use the **General** tab for global analytics settings (page scaffold ready).
-- Use the **Opciones** tab for additional configuration (page scaffold ready).
+- Use the **General** tab to view last 30 days metrics.
+- Use the **Opciones** tab to configure tracking and GA4 injection.
 
 ## Project structure
 ```

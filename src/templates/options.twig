@@ -1,7 +1,79 @@
 {% extends 'pragmatic-analytics/_layout' %}
+{% import '_includes/forms' as forms %}
 
 {% set title = 'Opciones' %}
 {% set selectedTab = 'options' %}
+{% set settings = settings ?? craft.app.plugins.getPlugin('pragmatic-analytics').settings %}
 
 {% block content %}
+  <form method="post" accept-charset="UTF-8">
+    {{ csrfInput() }}
+    {{ actionInput('pragmatic-analytics/default/save-settings') }}
+    {{ redirectInput('pragmatic-analytics/options') }}
+
+    <div class="readable">
+      <h2>Tracking propio</h2>
+      {{ forms.lightswitchField({
+        label: 'Activar tracking propio',
+        instructions: 'Registra visitas, usuarios únicos y páginas más vistas.',
+        id: 'enableTracking',
+        name: 'settings[enableTracking]',
+        on: settings.enableTracking,
+      }) }}
+
+      {{ forms.lightswitchField({
+        label: 'Requerir consentimiento',
+        instructions: 'Si está activo, solo registrará visitas cuando exista consentimiento (window.PragmaticAnalyticsConsent = true o cookie pa_consent=1).',
+        id: 'requireConsent',
+        name: 'settings[requireConsent]',
+        on: settings.requireConsent,
+      }) }}
+
+      {{ forms.lightswitchField({
+        label: 'Excluir usuarios logueados',
+        id: 'excludeLoggedInUsers',
+        name: 'settings[excludeLoggedInUsers]',
+        on: settings.excludeLoggedInUsers,
+      }) }}
+
+      {{ forms.lightswitchField({
+        label: 'Excluir bots conocidos',
+        id: 'excludeBots',
+        name: 'settings[excludeBots]',
+        on: settings.excludeBots,
+      }) }}
+
+      {{ forms.textField({
+        label: 'Entornos excluidos',
+        instructions: 'Lista separada por comas. Ejemplo: dev,development,local,staging',
+        id: 'excludeEnvironments',
+        name: 'settings[excludeEnvironments]',
+        value: settings.excludeEnvironments,
+      }) }}
+
+      <hr>
+
+      <h2>Google Analytics 4</h2>
+      {{ forms.lightswitchField({
+        label: 'Inyectar script de GA4',
+        instructions: 'Si está activo y existe Measurement ID, inyecta gtag automáticamente.',
+        id: 'injectGaScript',
+        name: 'settings[injectGaScript]',
+        on: settings.injectGaScript,
+      }) }}
+
+      {{ forms.textField({
+        label: 'Measurement ID',
+        instructions: 'Formato esperado: G-XXXXXXXXXX',
+        id: 'gaMeasurementId',
+        name: 'settings[gaMeasurementId]',
+        value: settings.gaMeasurementId,
+        placeholder: 'G-XXXXXXXXXX',
+      }) }}
+    </div>
+
+    <div class="buttons">
+      <button type="submit" class="btn submit">Guardar ajustes</button>
+    </div>
+  </form>
 {% endblock %}
