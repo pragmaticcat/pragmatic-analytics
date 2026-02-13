@@ -123,7 +123,8 @@ class PragmaticAnalytics extends Plugin
             View::EVENT_END_BODY,
             function () {
                 $request = \Craft::$app->getRequest();
-                if (!$request->getIsSiteRequest() || !$request->getAcceptsHtml()) {
+                $acceptsHtml = method_exists($request, 'accepts') ? $request->accepts('text/html') : true;
+                if (!$request->getIsSiteRequest() || !$acceptsHtml) {
                     return;
                 }
 
