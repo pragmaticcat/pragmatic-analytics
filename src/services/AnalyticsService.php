@@ -14,15 +14,23 @@ use yii\web\Response;
 class AnalyticsService extends Component
 {
     private const PATH_MAX_LENGTH = 191;
+    private const PAGE_PATH_INDEX = 'pragmaticanalytics_page_daily_stats_path_idx';
 
     public const DAILY_STATS_TABLE = '{{%pragmaticanalytics_daily_stats}}';
     public const PAGE_DAILY_STATS_TABLE = '{{%pragmaticanalytics_page_daily_stats}}';
     public const DAILY_UNIQUE_VISITORS_TABLE = '{{%pragmaticanalytics_daily_unique_visitors}}';
 
+    private bool $storageChecked = false;
+    private bool $storageReady = false;
+
     public function trackHit(string $path, Request $request, Response $response): bool
     {
         $settings = PragmaticAnalytics::$plugin->getSettings();
         if (!$settings->enableTracking) {
+            return false;
+        }
+
+        if (!$this->ensureStorageReady()) {
             return false;
         }
 
@@ -71,6 +79,10 @@ class AnalyticsService extends Component
 
     public function getOverview(int $days = 30): array
     {
+        if (!$this->ensureStorageReady()) {
+            return ['visits' => 0, 'uniqueVisitors' => 0];
+        }
+
         $rangeStart = $this->rangeStart($days);
         $row = (new \craft\db\Query())
             ->from(self::DAILY_STATS_TABLE)
@@ -89,6 +101,10 @@ class AnalyticsService extends Component
 
     public function getDailyStats(int $days = 30): array
     {
+        if (!$this->ensureStorageReady()) {
+            return [];
+        }
+
         $rangeStart = $this->rangeStart($days);
         return (new \craft\db\Query())
             ->from(self::DAILY_STATS_TABLE)
@@ -99,6 +115,10 @@ class AnalyticsService extends Component
 
     public function getTopPages(int $days = 30, int $limit = 10): array
     {
+        if (!$this->ensureStorageReady()) {
+            return [];
+        }
+
         $rangeStart = $this->rangeStart($days);
         return (new \craft\db\Query())
             ->from(self::PAGE_DAILY_STATS_TABLE)
@@ -196,5 +216,76 @@ class AnalyticsService extends Component
     {
         $days = max($days, 1);
         return gmdate('Y-m-d', strtotime('-' . ($days - 1) . ' days'));
+    }
+
+    private function ensureStorageReady(): bool
+    {
+        if ($this->storageChecked) {
+            return $this->storageReady;
+        }
+
+        $this->storageChecked = true;
+
+        try {
+            $db = Craft::$app->getDb();
+            $schema = $db->getSchema();
+
+            $missingDailyStats = $schema->getTableSchema(self::DAILY_STATS_TABLE, true) === null;
+            $missingPageDailyStats = $schema->getTableSchema(self::PAGE_DAILY_STATS_TABLE, true) === null;
+            $missingDailyUniqueVisitors = $schema->getTableSchema(self::DAILY_UNIQUE_VISITORS_TABLE, true) === null;
+
+            if (!$missingDailyStats && !$missingPageDailyStats && !$missingDailyUniqueVisitors) {
+                $this->storageReady = true;
+                return true;
+            }
+
+            $transaction = $db->beginTransaction();
+
+            if ($missingDailyStats) {
+                $db->createCommand()->createTable(self::DAILY_STATS_TABLE, [
+                    'date' => 'date NOT NULL',
+                    'visits' => 'integer NOT NULL DEFAULT 0',
+                    'uniqueVisitors' => 'integer NOT NULL DEFAULT 0',
+                    'PRIMARY KEY([[date]])',
+                ])->execute();
+            }
+
+            if ($missingPageDailyStats) {
+                $db->createCommand()->createTable(self::PAGE_DAILY_STATS_TABLE, [
+                    'date' => 'date NOT NULL',
+                    'path' => 'varchar(191) NOT NULL',
+                    'visits' => 'integer NOT NULL DEFAULT 0',
+                    'PRIMARY KEY([[date]], [[path]])',
+                ])->execute();
+            }
+
+            if ($missingDailyUniqueVisitors) {
+                $db->createCommand()->createTable(self::DAILY_UNIQUE_VISITORS_TABLE, [
+                    'date' => 'date NOT NULL',
+                    'visitorHash' => 'char(64) NOT NULL',
+                    'PRIMARY KEY([[date]], [[visitorHash]])',
+                ])->execute();
+            }
+
+            if ($missingPageDailyStats && $schema->getTableSchema(self::PAGE_DAILY_STATS_TABLE, true) !== null) {
+                $db->createCommand()->createIndex(
+                    self::PAGE_PATH_INDEX,
+                    self::PAGE_DAILY_STATS_TABLE,
+                    ['path'],
+                    false
+                )->execute();
+            }
+
+            $transaction->commit();
+            $this->storageReady = true;
+            return true;
+        } catch (\Throwable $exception) {
+            if (isset($transaction) && $transaction->isActive) {
+                $transaction->rollBack();
+            }
+            Craft::error('Pragmatic Analytics storage bootstrap failed: ' . $exception->getMessage(), __METHOD__);
+            $this->storageReady = false;
+            return false;
+        }
     }
 }
